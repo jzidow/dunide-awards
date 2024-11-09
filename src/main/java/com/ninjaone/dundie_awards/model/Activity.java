@@ -8,6 +8,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 
 import java.time.LocalDateTime;
 
@@ -29,6 +30,8 @@ public class Activity {
     @Column(name = "org_id")
     private Long orgId;
 
+    @Version
+    private Integer version;
 
 
     //add orgId field that doesn't save to the database, update params in MessageBroker

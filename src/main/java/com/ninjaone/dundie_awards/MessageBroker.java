@@ -2,8 +2,9 @@ package com.ninjaone.dundie_awards;
 
 import com.ninjaone.dundie_awards.model.Activity;
 import com.ninjaone.dundie_awards.model.ActivityRunnable;
+import com.ninjaone.dundie_awards.model.EventEnum;
 import com.ninjaone.dundie_awards.repository.ActivityRepository;
-import com.ninjaone.dundie_awards.repository.EmployeeRepository;
+import com.ninjaone.dundie_awards.service.EmployeeRollbackService;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
@@ -12,7 +13,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
-import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -21,21 +21,17 @@ import java.util.stream.Collectors;
 @Component
 public class MessageBroker {
 
-    private List<Activity> messages = new LinkedList<>();
+    private final EmployeeRollbackService employeeRollbackService;
     private final ActivityRepository activityRepository;
-    private final EmployeeRepository employeeRepository;
-    private final AwardsCache awardsCache;
     private final ThreadPoolTaskExecutor taskExecutor;
     private static final Logger logger = LoggerFactory.getLogger(MessageBroker.class);
     private static final int MAX_RETRIES = 3;
 
-    public MessageBroker(ActivityRepository activityRepository,
-                         EmployeeRepository employeeRepository,
-                         AwardsCache awardsCache,
+    public MessageBroker(EmployeeRollbackService employeeRollbackService,
+                         ActivityRepository activityRepository,
                          @Qualifier("customTaskExecutor")ThreadPoolTaskExecutor taskExecutor) {
+        this.employeeRollbackService = employeeRollbackService;
         this.activityRepository = activityRepository;
-        this.employeeRepository = employeeRepository;
-        this.awardsCache = awardsCache;
         this.taskExecutor = taskExecutor;
     }
 
@@ -49,42 +45,49 @@ public class MessageBroker {
     }
 
     @Transactional
-    public void sendMessageInternal(Activity message) {
+    public void sendMessageInternal(Activity message){
 
-        logger.info("Asyncronously creating activity type: {}, occurredAt: {}, orgId: {}",
-                message.getEvent(),message.getOccuredAt(), message.getOccuredAt());
+        logger.info("Message read to create activity type: {}, occurredAt: {}, orgId: {}",
+                message.getEvent(),message.getOccuredAt(), message.getOrgId());
         boolean succeeded = false;
 
         int attempt = 0;
         while (!succeeded && attempt < MAX_RETRIES) {
+            logger.info("Creating activity with type: {}, occurredAt: {}, orgId: {} on attempt: {}/{}",
+                    message.getEvent(), message.getOccuredAt(), message.getOrgId(), attempt, MAX_RETRIES);
             try {
                 ++attempt;
                 message = activityRepository.save(message);
                 succeeded = true;
-                logger.info("Sucessfully created activity with id: {}, type: {}, occurredAt: {}, orgId: {}",
-                        message.getId(), message.getEvent(), message.getOccuredAt(), message.getOrgId());
+                logger.info("Sucessfully created activity with id: {}, type: {}, occurredAt: {}, orgId: {} on attempt: {}/{}",
+                        message.getId(), message.getEvent(), message.getOccuredAt(), message.getOrgId(), attempt, MAX_RETRIES);
+
             } catch(OptimisticLockException e) {
                 if (attempt >= MAX_RETRIES) {
-                    logger.warn("Optimistic Lock Detected on final attempt {}/{}", attempt, MAX_RETRIES);
+                    logger.warn("Optimistic Lock Detected on final attempt {}/{} \n {} \n {}", attempt, MAX_RETRIES, e.getMessage(), e.getStackTrace());
                 } else {
-                    logger.warn("Optimistic Lock Detected on attempt {}/{}, retrying ...", attempt, MAX_RETRIES);
+                    logger.warn("Optimistic Lock Detected on attempt {}/{}, retrying ...\n {} \n {}", attempt, MAX_RETRIES, e.getMessage(), e.getStackTrace());
+                    try {
+                        Thread.sleep(500);
+                    } catch (InterruptedException ex) {
+                        logger.error("Sleeping thread interrupted when waiting to retry creating activity {} for orgId {} on attempt {}/{} \n {} \n {} ",
+                                message.getEvent(), e.getMessage(), attempt, MAX_RETRIES, e.getMessage(), e.getStackTrace());
+                        break;
+                    }
                 }
-
             } catch (Exception e) {
-                logger.error("Error occured in creating activity {} for orgId {} \n {} ",
-                        message.getEvent(), e.getMessage(), e.getMessage());
+                logger.error("Error occurred in creating activity {} for orgId {} on attempt {}/{} \n {} \n {} ",
+                        message.getEvent(), e.getMessage(), attempt, MAX_RETRIES, e.getMessage(), e.getStackTrace());
                 break;
             }
         }
 
         if (!succeeded) {
             // rolling back update in error for requirement
-            int employeesUpdated = employeeRepository.decrementDundieAwardsByOrgId(message.getOrgId());
-            awardsCache.setTotalAwards(awardsCache.getTotalAwards() - employeesUpdated);
-            logger.error("Rolled back {} employees dundie award updates in org with orgId {}",
-                    employeesUpdated, message.getOrgId());
+            if (message.getEvent() == EventEnum.GIVE_DUNDIE_ORG){
+                employeeRollbackService.removeDundieAwardFromOrg(message.getOrgId());
+            }
         }
-
     }
 
     public List<Activity> getMessages(){

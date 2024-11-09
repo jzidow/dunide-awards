@@ -3,9 +3,11 @@ package com.ninjaone.dundie_awards.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.retry.annotation.EnableRetry;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 
 @Configuration
+@EnableRetry
 public class AsyncConfig {
     @Value("${dundie.thread-pool.core-pool-size}")
     private int corePoolSize;

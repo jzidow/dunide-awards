@@ -7,17 +7,16 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Repository
 public interface EmployeeRepository extends JpaRepository<Employee, Long> {
 
-    @Modifying
-    @Transactional
-    @Query("UPDATE Employee e SET e.dundieAwards = e.dundieAwards + 1 WHERE e.organization.id = :orgId")
-    int incrementDundieAwardsByOrgId(Long orgId);
+    List<Employee> findAllByOrganizationId(Long orgId);
 
-    @Modifying
     @Transactional
-    @Query("UPDATE Employee e SET e.dundieAwards = e.dundieAwards - 1 WHERE e.organization.id = :orgId")
-    int decrementDundieAwardsByOrgId(Long orgId);
+    @Modifying
+    @Query("DELETE FROM Employee e WHERE e.id = :id")
+    int deleteEmployeeById(Long id);
 
 }

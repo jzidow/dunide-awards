@@ -17,7 +17,11 @@ public class AwardsCache {
         return totalAwards.get();
     }
 
-    public void addOneAward(){
-        totalAwards.incrementAndGet();
+    public void addAwards(int awards){
+        totalAwards.addAndGet(awards);
+    }
+
+    public void subtractAwards(int awards){
+        totalAwards.addAndGet(-awards);
     }
 }
