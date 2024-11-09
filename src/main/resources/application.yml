@@ -37,3 +37,10 @@ spring:
       static-locations: file:src/main/resources/static/
       cache:
         period: 0
+
+dundie:
+  thread-pool:
+    core-pool-size: 3
+    max-pool-size: 8
+    queue-capacity: 100
+    thread-name-prefix: AsyncExecutor-
