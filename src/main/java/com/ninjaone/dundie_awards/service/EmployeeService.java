@@ -63,10 +63,10 @@ public class EmployeeService {
             logger.error("Unable to find emplyees in org with id {}", orgId);
             throw new ResourceNotFoundException("Organization not found with ID: " + orgId);
         }
-        awardsCache.setTotalAwards(awardsCache.getTotalAwards() + employeesUpdated);
 
-        Activity activity = new Activity(LocalDateTime.now(), EventEnum.GIVE_DUNDIE_ORG);
-        messageBroker.sendMessage(activity, Optional.of(orgId));
+        awardsCache.setTotalAwards(awardsCache.getTotalAwards() + employeesUpdated);
+        Activity activity = new Activity(LocalDateTime.now(), EventEnum.GIVE_DUNDIE_ORG, orgId);
+        messageBroker.sendMessage(activity);
 
         return activity;
 

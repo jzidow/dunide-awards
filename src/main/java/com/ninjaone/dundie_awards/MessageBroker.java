@@ -1,13 +1,16 @@
 package com.ninjaone.dundie_awards;
 
 import com.ninjaone.dundie_awards.model.Activity;
+import com.ninjaone.dundie_awards.model.ActivityRunnable;
 import com.ninjaone.dundie_awards.model.Employee;
 import com.ninjaone.dundie_awards.repository.ActivityRepository;
 import com.ninjaone.dundie_awards.repository.EmployeeRepository;
 import com.ninjaone.dundie_awards.service.ActivityService;
+import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
@@ -17,6 +20,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.stream.Collectors;
 
 @Component
 public class MessageBroker {
@@ -27,45 +32,74 @@ public class MessageBroker {
     private final AwardsCache awardsCache;
     private final ThreadPoolTaskExecutor taskExecutor;
     private static final Logger logger = LoggerFactory.getLogger(MessageBroker.class);
+    private static final int MAX_RETRIES = 3;
 
-    public MessageBroker(ActivityRepository activityRepository, EmployeeRepository employeeRepository, AwardsCache awardsCache, ThreadPoolTaskExecutor taskExecutor) {
+    public MessageBroker(ActivityRepository activityRepository,
+                         EmployeeRepository employeeRepository,
+                         AwardsCache awardsCache,
+                         @Qualifier("customTaskExecutor")ThreadPoolTaskExecutor taskExecutor) {
         this.activityRepository = activityRepository;
         this.employeeRepository = employeeRepository;
         this.awardsCache = awardsCache;
         this.taskExecutor = taskExecutor;
     }
 
-    @Async
+    public void sendMessage(Activity message){
+        logger.info("Queuing activity type: {}, occurredAt: {}, orgId: {}",
+                message.getEvent(), message.getOccuredAt(), message.getOrgId());
+        ActivityRunnable activityRunnable = new ActivityRunnable(message, this);
+        taskExecutor.execute(activityRunnable);
+        logger.info("Queued activity type: {}, occurredAt: {}, orgId: {}",
+                message.getEvent(), message.getOccuredAt(), message.getOrgId());
+    }
+
     @Transactional
-    public void sendMessage(Activity message, Optional<Long> orgId) {
+    public void sendMessageInternal(Activity message) {
 
-        logger.info("Asyncronously creating activity for {}, occurredAt : {}", message.getEvent(),message.getOccuredAt());
-        try {
-            activityRepository.save(message);
+        logger.info("Asyncronously creating activity type: {}, occurredAt: {}, orgId: {}",
+                message.getEvent(),message.getOccuredAt(), message.getOccuredAt());
+        boolean succeeded = false;
 
-        } catch (Exception e) {
-            logger.error("Error occured in creating activity {} for orgId {} \n {} ",
-                    message.getEvent(), e.getMessage(), e.getMessage());
-            orgId.ifPresent(id -> { // rolling back update in error for requirement
-                int employeesUpdated = employeeRepository.decrementDundieAwardsByOrgId(id);
-                awardsCache.setTotalAwards(awardsCache.getTotalAwards() - employeesUpdated);
-                logger.error("Rolled back {} employees dudnie award update in org with orgId {}", employeesUpdated, orgId);
-            });
+        int attempt = 0;
+        while (!succeeded && attempt < MAX_RETRIES) {
+            try {
+                ++attempt;
+                message = activityRepository.save(message);
+                succeeded = true;
+                logger.info("Sucessfully created activity with id: {}, type: {}, occurredAt: {}, orgId: {}",
+                        message.getId(), message.getEvent(), message.getOccuredAt(), message.getOrgId());
+            } catch(OptimisticLockException e) {
+                if (attempt >= MAX_RETRIES) {
+                    logger.warn("Optimistic Lock Detected on final attempt {}/{}", attempt, MAX_RETRIES);
+                } else {
+                    logger.warn("Optimistic Lock Detected on attempt {}/{}, retrying ...", attempt, MAX_RETRIES);
+                }
+
+            } catch (Exception e) {
+                logger.error("Error occured in creating activity {} for orgId {} \n {} ",
+                        message.getEvent(), e.getMessage(), e.getMessage());
+                break;
+            }
         }
+
+        if (!succeeded) {
+            // rolling back update in error for requirement
+            int employeesUpdated = employeeRepository.decrementDundieAwardsByOrgId(message.getOrgId());
+            awardsCache.setTotalAwards(awardsCache.getTotalAwards() - employeesUpdated);
+            logger.error("Rolled back {} employees dundie award updates in org with orgId {}",
+                    employeesUpdated, message.getOrgId());
+        }
+
     }
 
     public List<Activity> getMessages(){
+        ThreadPoolExecutor executor = taskExecutor.getThreadPoolExecutor();
+        BlockingQueue<Runnable> queue = executor.getQueue();
 
-        // difficult to get activity from here
+        return queue.stream()
+                .filter(task -> task instanceof ActivityRunnable)
+                .map(task -> ((ActivityRunnable) task).getActivity())
+                .collect(Collectors.toList());
 
-//        BlockingQueue<Runnable> queue = executor.getQueue();
-//
-//        System.out.println("Tasks currently in the queue: " + queue.size());
-//
-//        for (Runnable task : queue) {
-//            System.out.println("Queued task: " + task);
-//        }
-
-        return messages;
     }
 }

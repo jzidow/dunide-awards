@@ -72,8 +72,8 @@ public class EmployeeController {
     @PostMapping("/give-dundie-awards/{orgId}")
     public ResponseEntity<Activity> giveDundieAwards(@PathVariable Long orgId) {
         logger.info("Handling POST request for /give-dundie-awards/{organizationId} - giveDundieAwards(orgId = {})", orgId);
-        Activity asyncActivity = employeeService.giveDundieAwardsToOrg(orgId);
-        return ResponseEntity.ok(asyncActivity);
+        Activity activity = employeeService.giveDundieAwardsToOrg(orgId);
+        return ResponseEntity.ok(activity);
     }
 
 }

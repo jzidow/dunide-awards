@@ -22,6 +22,9 @@ public class Employee {
     @ManyToOne
     private Organization organization;
 
+    @Version
+    private Integer version;
+
     public Employee() {
 
     }

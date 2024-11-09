@@ -18,13 +18,20 @@ public class Activity {
     @Enumerated(EnumType.STRING)
     private EventEnum event;
 
-    public Activity() {
+    @Column(name = "org_id")
+    private Long orgId;
 
+
+
+    //add orgId field that doesn't save to the database, update params in MessageBroker
+
+    public Activity() {
     }
 
-    public Activity(LocalDateTime localDateTime, EventEnum event) {
+    public Activity(LocalDateTime localDateTime, EventEnum event, Long orgId) {
         this.occuredAt = localDateTime;
         this.event = event;
+        this.orgId = orgId;
     }
 
     public LocalDateTime getOccuredAt() {
@@ -34,5 +41,9 @@ public class Activity {
     public EventEnum getEvent() {
         return event;
     }
+
+    public Long getId() { return id;}
+
+    public Long getOrgId() { return orgId; }
 
 }
