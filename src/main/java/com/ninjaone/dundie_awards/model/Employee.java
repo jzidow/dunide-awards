@@ -17,7 +17,7 @@ public class Employee {
     private String lastName;
 
     @Column(name = "dundie_awards")
-    private Integer dundieAwards;
+    private Integer dundieAwards = 0;
 
     @ManyToOne
     private Organization organization;
@@ -27,7 +27,6 @@ public class Employee {
     }
 
     public Employee(String firstName, String lastName, Organization organization) {
-        super();
         this.firstName = firstName;
         this.lastName = lastName;
         this.organization = organization;

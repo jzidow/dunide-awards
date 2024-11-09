@@ -15,14 +15,14 @@ public class Activity {
     private LocalDateTime occuredAt;
 
     @Column(name = "event")
-    private String event;
+    @Enumerated(EnumType.STRING)
+    private EventEnum event;
 
     public Activity() {
 
     }
 
-    public Activity(LocalDateTime localDateTime, String event) {
-        super();
+    public Activity(LocalDateTime localDateTime, EventEnum event) {
         this.occuredAt = localDateTime;
         this.event = event;
     }
@@ -31,7 +31,7 @@ public class Activity {
         return occuredAt;
     }
 
-    public String getEvent() {
+    public EventEnum getEvent() {
         return event;
     }
 
