@@ -27,24 +27,4 @@ public class ActivityService {
     public List<Activity> getAllActivities() {
         return activityRepository.findAll();
     }
-
-//    @Async
-//    @Transactional
-//    public void createActivityAsync(LocalDateTime occuredAt, EventEnum event, Long orgId){
-//        logger.info("Asyncronously creating activity for {}, occurredAt : {}, orgId: {}", occuredAt, event, orgId);
-//        try {
-//            Activity activity = new Activity(occuredAt, event);
-//            activityRepository.save(activity);
-//        } catch (Exception e) {
-//            if (orgId != null){
-//                //rolling back awards distribution in the case activity creation fails
-//                int employeesUpdated = employeeRepository.decrementDundieAwardsByOrgId(orgId);
-//                awardsCache.setTotalAwards(awardsCache.getTotalAwards() - employeesUpdated);
-//
-//            }
-//
-//        }
-//
-//    }
-
 }

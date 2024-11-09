@@ -8,6 +8,8 @@ import com.ninjaone.dundie_awards.model.Employee;
 import com.ninjaone.dundie_awards.model.EventEnum;
 import com.ninjaone.dundie_awards.repository.EmployeeRepository;
 import jakarta.transaction.Transactional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
@@ -20,6 +22,7 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final AwardsCache awardsCache;
     private final MessageBroker messageBroker;
+    private final static Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
     public EmployeeService(EmployeeRepository employeeRepository, AwardsCache awardsCache, MessageBroker messageBroker) {
         this.employeeRepository = employeeRepository;
@@ -57,6 +60,7 @@ public class EmployeeService {
 
         int employeesUpdated = employeeRepository.incrementDundieAwardsByOrgId(orgId);
         if (employeesUpdated == 0) {
+            logger.error("Unable to find emplyees in org with id {}", orgId);
             throw new ResourceNotFoundException("Organization not found with ID: " + orgId);
         }
         awardsCache.setTotalAwards(awardsCache.getTotalAwards() + employeesUpdated);

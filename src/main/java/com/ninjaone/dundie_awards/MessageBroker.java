@@ -39,15 +39,17 @@ public class MessageBroker {
     @Transactional
     public void sendMessage(Activity message, Optional<Long> orgId) {
 
-//        messages.add(message);
         logger.info("Asyncronously creating activity for {}, occurredAt : {}", message.getEvent(),message.getOccuredAt());
         try {
             activityRepository.save(message);
+
         } catch (Exception e) {
-            logger.error(e.getMessage());
-            orgId.ifPresent(id -> {
+            logger.error("Error occured in creating activity {} for orgId {} \n {} ",
+                    message.getEvent(), e.getMessage(), e.getMessage());
+            orgId.ifPresent(id -> { // rolling back update in error for requirement
                 int employeesUpdated = employeeRepository.decrementDundieAwardsByOrgId(id);
                 awardsCache.setTotalAwards(awardsCache.getTotalAwards() - employeesUpdated);
+                logger.error("Rolled back {} employees dudnie award update in org with orgId {}", employeesUpdated, orgId);
             });
         }
     }
