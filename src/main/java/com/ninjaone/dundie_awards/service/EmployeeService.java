@@ -23,7 +23,6 @@ public class EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final AwardsCache awardsCache;
     private final MessageBroker messageBroker;
-
     private final static Logger logger = LoggerFactory.getLogger(EmployeeService.class);
 
     public EmployeeService(EmployeeRepository employeeRepository,
@@ -60,7 +59,6 @@ public class EmployeeService {
         return employee;
     }
 
-
     @Retryable(
             value = { OptimisticLockException.class },
             maxAttempts = 3,
@@ -73,7 +71,6 @@ public class EmployeeService {
             throw new ResourceNotFoundException("Employee not found with ID: " + id);
         }
     }
-
 
     @Retryable(
             value = { OptimisticLockException.class },
@@ -90,15 +87,12 @@ public class EmployeeService {
             logger.error("Unable to find emplyees in org with id {}", orgId);
             throw new ResourceNotFoundException("Organization not found with ID: " + orgId);
         }
-
         for (Employee employee : employees) {
             employee.setDundieAwards(employee.getDundieAwards() + 1);
         }
-
         awardsCache.addAwards(employees.size());
         Activity activity = new Activity(LocalDateTime.now(), EventEnum.GIVE_DUNDIE_ORG, orgId);
         messageBroker.sendMessage(activity);
-
         return activity;
     }
 }

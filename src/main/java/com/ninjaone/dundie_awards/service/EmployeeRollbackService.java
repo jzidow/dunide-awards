@@ -2,9 +2,7 @@ package com.ninjaone.dundie_awards.service;
 
 import com.ninjaone.dundie_awards.AwardsCache;
 import com.ninjaone.dundie_awards.exception.ResourceNotFoundException;
-import com.ninjaone.dundie_awards.model.Activity;
 import com.ninjaone.dundie_awards.model.Employee;
-import com.ninjaone.dundie_awards.model.EventEnum;
 import com.ninjaone.dundie_awards.repository.EmployeeRepository;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
@@ -14,7 +12,6 @@ import org.springframework.retry.annotation.Backoff;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -44,11 +41,9 @@ public class EmployeeRollbackService {
             logger.error("Unable to find employees in org with id {} to remove a dundie award", orgId);
             throw new ResourceNotFoundException("Organization not found with ID: " + orgId);
         }
-
         for (Employee employee : employees) {
             employee.setDundieAwards(employee.getDundieAwards() - 1);
         }
-
         awardsCache.subtractAwards(employees.size());
     }
 }

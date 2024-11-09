@@ -50,7 +50,6 @@ public class MessageBroker {
         logger.info("Message read to create activity type: {}, occurredAt: {}, orgId: {}",
                 message.getEvent(),message.getOccuredAt(), message.getOrgId());
         boolean succeeded = false;
-
         int attempt = 0;
         while (!succeeded && attempt < MAX_RETRIES) {
             logger.info("Creating activity with type: {}, occurredAt: {}, orgId: {} on attempt: {}/{}",
