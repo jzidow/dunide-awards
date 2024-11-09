@@ -2,23 +2,18 @@ package com.ninjaone.dundie_awards;
 
 import com.ninjaone.dundie_awards.model.Activity;
 import com.ninjaone.dundie_awards.model.ActivityRunnable;
-import com.ninjaone.dundie_awards.model.Employee;
 import com.ninjaone.dundie_awards.repository.ActivityRepository;
 import com.ninjaone.dundie_awards.repository.EmployeeRepository;
-import com.ninjaone.dundie_awards.service.ActivityService;
 import jakarta.persistence.OptimisticLockException;
 import jakarta.transaction.Transactional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.stream.Collectors;
