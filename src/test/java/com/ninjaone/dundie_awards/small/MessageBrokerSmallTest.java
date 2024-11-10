@@ -44,7 +44,9 @@ public class MessageBrokerSmallTest {
         testActivity = new Activity(LocalDateTime.now(), EventEnum.GIVE_DUNDIE_ORG, 5L); // Configure test Activity instance
     }
 
-    // Upon success of creating activity .save, only call .save once and ensure no rollback
+    // Upon success of creating activity
+    // Assert.save called once
+    // Assert no rollback
     @Test
     void testSendMessageInternalSuccessful() {
         // Assuming sendMessageInternal method calls repository methods
@@ -55,8 +57,8 @@ public class MessageBrokerSmallTest {
     }
 
     // Upon optimistic lock exception from creating activity
-    // Call .save MAX_RETRIES amount 3,
-    // Confirm 1 rollback occurred when rollback succeeds
+    // Assert .save called 3 times
+    // Assert 1 rollback occurred
     @Test
     void testSendMessageInternalWithOptimisticLockException() {
         // Simulate OptimisticLockException
@@ -68,8 +70,8 @@ public class MessageBrokerSmallTest {
     }
 
     // Upon other exception from creating activity
-    // Call .save once, we only retry on optimistic lock exceptions
-    // Confirm 1 rollback occurred when rollback succeeds
+    // Assert .save(activity) called once, we only retry on optimistic lock exceptions
+    // Assert 1 rollback occurred
     @Test
     void testSendMessageInternalWithException() {
         // Simulate OptimisticLockException
