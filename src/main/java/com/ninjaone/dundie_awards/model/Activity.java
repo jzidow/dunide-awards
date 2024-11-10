@@ -33,9 +33,6 @@ public class Activity {
     @Version
     private Integer version;
 
-
-    //add orgId field that doesn't save to the database, update params in MessageBroker
-
     public Activity() {
     }
 
@@ -45,6 +42,10 @@ public class Activity {
         this.orgId = orgId;
     }
 
+    public Long getId() { return id;}
+
+    public void setId(Long id) { this.id = id; }
+
     public LocalDateTime getOccuredAt() {
         return occuredAt;
     }
@@ -53,8 +54,5 @@ public class Activity {
         return event;
     }
 
-    public Long getId() { return id;}
-
     public Long getOrgId() { return orgId; }
-
 }

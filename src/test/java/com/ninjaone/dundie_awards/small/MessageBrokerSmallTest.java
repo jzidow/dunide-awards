@@ -74,7 +74,7 @@ public class MessageBrokerSmallTest {
     // Assert 1 rollback occurred
     @Test
     void testSendMessageInternalWithException() {
-        // Simulate OptimisticLockException
+        // Simulate RuntimeException
         doThrow(new RuntimeException("TEST simulated optimistic lock exception"))
                 .when(activityRepository).save(any(Activity.class));
         messageBroker.sendMessageInternal(testActivity);
