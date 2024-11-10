@@ -39,8 +39,8 @@ public class Activity {
     public Activity() {
     }
 
-    public Activity(LocalDateTime localDateTime, EventEnum event, Long orgId) {
-        this.occuredAt = localDateTime;
+    public Activity(LocalDateTime occurredAt, EventEnum event, Long orgId) {
+        this.occuredAt = occurredAt;
         this.event = event;
         this.orgId = orgId;
     }

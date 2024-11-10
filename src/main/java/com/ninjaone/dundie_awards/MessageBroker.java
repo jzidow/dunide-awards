@@ -52,10 +52,10 @@ public class MessageBroker {
         boolean succeeded = false;
         int attempt = 0;
         while (!succeeded && attempt < MAX_RETRIES) {
+            ++attempt;
             logger.info("Creating activity with type: {}, occurredAt: {}, orgId: {} on attempt: {}/{}",
                     message.getEvent(), message.getOccuredAt(), message.getOrgId(), attempt, MAX_RETRIES);
             try {
-                ++attempt;
                 message = activityRepository.save(message);
                 succeeded = true;
                 logger.info("Sucessfully created activity with id: {}, type: {}, occurredAt: {}, orgId: {} on attempt: {}/{}",
