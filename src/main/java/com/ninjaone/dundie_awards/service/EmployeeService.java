@@ -87,7 +87,7 @@ public class EmployeeService {
         List<Employee> employees = employeeRepository.findAllByOrganizationId(orgId);
 
         if (employees.isEmpty()) {
-            logger.error("Unable to find emplyees in org with id {}", orgId);
+            logger.error("Unable to find employees in org with id {}", orgId);
             throw new ResourceNotFoundException("Organization not found with ID: " + orgId);
         }
         for (Employee employee : employees) {

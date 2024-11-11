@@ -46,10 +46,6 @@ public class Employee {
         return id;
     }
 
-    public void setId(long id) {
-        this.id = id;
-    }
-
     public String getFirstName() {
         return firstName;
     }
@@ -68,10 +64,6 @@ public class Employee {
 
     public Organization getOrganization() {
         return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
     }
 
     public void setDundieAwards(int dundieAwards){
