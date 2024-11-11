@@ -1,9 +1,7 @@
 package com.ninjaone.dundie_awards;
 
 import org.springframework.stereotype.Component;
-
 import java.util.concurrent.atomic.AtomicInteger;
-
 
 @Component
 public class AwardsCache {
