@@ -17,6 +17,6 @@ public class ActivityRunnable implements Runnable {
 
     @Override
     public void run(){
-        messageBroker.sendMessageInternal(activity); // Internal method to handle activity logic
+        messageBroker.consumeMessage(activity); // Internal method to handle activity logic
     }
 }

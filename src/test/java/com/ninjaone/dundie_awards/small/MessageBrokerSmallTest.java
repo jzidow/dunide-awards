@@ -46,10 +46,10 @@ public class MessageBrokerSmallTest {
     // Assert no rollback
     @Test
     @DisplayName("Sucessfuly Send Message")
-    void testSendMessageInternalSuccessful() {
+    void testConsumeMessageSuccessful() {
         // Assuming sendMessageInternal method calls repository methods
         doReturn(testActivity).when(activityRepository).save(any(Activity.class));
-        messageBroker.sendMessageInternal(testActivity);
+        messageBroker.consumeMessage(testActivity);
         verify(activityRepository, times(1)).save(testActivity);
         verify(employeeRollbackService, times(0)).removeDundieAwardFromOrg(testActivity.getOrgId());
     }
@@ -59,11 +59,11 @@ public class MessageBrokerSmallTest {
     // Assert 1 rollback occurred
     @Test
     @DisplayName("Send Message Retry for Lock Exception")
-    void testSendMessageInternalWithOptimisticLockException() {
+    void testConsumeMessageWithOptimisticLockException() {
         // Simulate OptimisticLockException
         doThrow(new OptimisticLockException("TEST simulated optimistic lock exception"))
                 .when(activityRepository).save(any(Activity.class));
-        messageBroker.sendMessageInternal(testActivity);
+        messageBroker.consumeMessage(testActivity);
         verify(activityRepository, times(3)).save(testActivity);
         verify(employeeRollbackService, times(1)).removeDundieAwardFromOrg(testActivity.getOrgId());
     }
@@ -73,11 +73,11 @@ public class MessageBrokerSmallTest {
     // Assert 1 rollback occurred
     @Test
     @DisplayName("Send Message No Retry for Exception")
-    void testSendMessageInternalWithException() {
+    void testConsumeMessageWithException() {
         // Simulate RuntimeException
         doThrow(new RuntimeException("TEST simulated optimistic lock exception"))
                 .when(activityRepository).save(any(Activity.class));
-        messageBroker.sendMessageInternal(testActivity);
+        messageBroker.consumeMessage(testActivity);
         verify(activityRepository, times(1)).save(testActivity);
         verify(employeeRollbackService, times(1)).removeDundieAwardFromOrg(testActivity.getOrgId());
     }

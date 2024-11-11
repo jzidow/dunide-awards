@@ -45,8 +45,7 @@ public class MessageBroker {
     }
 
     @Transactional
-    public void sendMessageInternal(Activity message){
-
+    public void consumeMessage(Activity message){
         logger.info("Message read to create activity type: {}, occurredAt: {}, orgId: {}",
                 message.getEvent(),message.getOccuredAt(), message.getOrgId());
         boolean succeeded = false;

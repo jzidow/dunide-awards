@@ -37,19 +37,17 @@ public class MessageBrokerMediumTest {
     @Autowired
     private EmployeeRepository employeeRepository;
 
-    private Long orgId = 5L;
-
-
     @BeforeEach
     void setUp() {
+        Long orgId = 5L;
         testActivity = new Activity(LocalDateTime.now(), EventEnum.GIVE_DUNDIE_ORG, orgId);
         activityRepository.deleteAll();  // Clear previous test data to ensure a clean state
     }
 
     // "Should successfully save activity without rollback"
     @Test
-    void testSendMessageInternalSuccessful() {
-        messageBroker.sendMessageInternal(testActivity);
+    void testConsumeMessageSuccessful() {
+        messageBroker.consumeMessage(testActivity);
 
         // Assert that the activity was saved in the database
         Activity savedActivity = activityRepository.findById(testActivity.getId()).orElse(null);
@@ -59,7 +57,7 @@ public class MessageBrokerMediumTest {
         verify(employeeRollbackService, times(0)).removeDundieAwardFromOrg(testActivity.getOrgId());
     }
 
-    // "Should retry 3 times and call rollback on OptimisticLockException" NOT WORKING
+    // "Should retry 3 times and call rollback on OptimisticLockException"
 //    @Test
 //    void testSendMessageInternalWithOptimisticLockException() {
 //    }
