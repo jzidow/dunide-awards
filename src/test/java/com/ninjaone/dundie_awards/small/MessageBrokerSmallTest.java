@@ -16,10 +16,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.times;
@@ -48,6 +45,7 @@ public class MessageBrokerSmallTest {
     // Assert.save called once
     // Assert no rollback
     @Test
+    @DisplayName("Sucessfuly Send Message")
     void testSendMessageInternalSuccessful() {
         // Assuming sendMessageInternal method calls repository methods
         doReturn(testActivity).when(activityRepository).save(any(Activity.class));
@@ -60,6 +58,7 @@ public class MessageBrokerSmallTest {
     // Assert .save called 3 times
     // Assert 1 rollback occurred
     @Test
+    @DisplayName("Send Message Retry for Lock Exception")
     void testSendMessageInternalWithOptimisticLockException() {
         // Simulate OptimisticLockException
         doThrow(new OptimisticLockException("TEST simulated optimistic lock exception"))
@@ -73,6 +72,7 @@ public class MessageBrokerSmallTest {
     // Assert .save(activity) called once, we only retry on optimistic lock exceptions
     // Assert 1 rollback occurred
     @Test
+    @DisplayName("Send Message No Retry for Exception")
     void testSendMessageInternalWithException() {
         // Simulate RuntimeException
         doThrow(new RuntimeException("TEST simulated optimistic lock exception"))
