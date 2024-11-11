@@ -66,10 +66,13 @@ public class EmployeeService {
     )
     @Transactional
     public void deleteEmployee(Long id) {
+        Employee employee = getEmployeeById(id);
+        int empAwards = employee.getDundieAwards();
         int deletedRows = employeeRepository.deleteEmployeeById(id);
         if (deletedRows == 0) {
             throw new ResourceNotFoundException("Employee not found with ID: " + id);
         }
+        awardsCache.subtractAwards(empAwards);
     }
 
     @Retryable(

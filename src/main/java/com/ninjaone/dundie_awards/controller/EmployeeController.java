@@ -70,7 +70,7 @@ public class EmployeeController {
 
     @PostMapping("/give-dundie-awards/{orgId}")
     public ResponseEntity<Activity> giveDundieAwards(@PathVariable Long orgId) {
-        logger.info("Handling POST request for /give-dundie-awards/{organizationId} - giveDundieAwards(orgId = {})", orgId);
+        logger.info("Handling POST request for /give-dundie-awards/organizationId - giveDundieAwards(orgId = {})", orgId);
         Activity activity = employeeService.giveDundieAwardToOrg(orgId);
         return ResponseEntity.ok(activity);
     }

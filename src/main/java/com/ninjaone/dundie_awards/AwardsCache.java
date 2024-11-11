@@ -7,10 +7,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 @Component
 public class AwardsCache {
-    private final AtomicInteger totalAwards = new AtomicInteger(0);
+    private final static AtomicInteger totalAwards = new AtomicInteger(0);
 
-    public void setTotalAwards(int totalAwards) {
-        this.totalAwards.set(totalAwards);
+    public void setTotalAwards(int awards) {
+        AwardsCache.totalAwards.set(awards);
     }
 
     public int getTotalAwards(){
