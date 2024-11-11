@@ -68,6 +68,7 @@ public class EmployeeController {
         return ResponseEntity.ok(response);
     }
 
+    // give one dundie award to each person in org
     @PostMapping("/give-dundie-awards/{orgId}")
     public ResponseEntity<Activity> giveDundieAwards(@PathVariable Long orgId) {
         logger.info("Handling POST request for /give-dundie-awards/organizationId - giveDundieAwards(orgId = {})", orgId);

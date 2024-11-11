@@ -33,7 +33,6 @@ public class EmployeeRollbackService {
     )
     @Transactional
     public void removeDundieAwardFromOrg(Long orgId){
-
         logger.info("ROLLBACK: removing one dundie award to each employee in org with orgId {}", orgId);
         List<Employee> employees = employeeRepository.findAllByOrganizationId(orgId);
 

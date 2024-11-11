@@ -1,5 +1,6 @@
 package com.ninjaone.dundie_awards.medium;
 
+import com.ninjaone.dundie_awards.AwardsCache;
 import com.ninjaone.dundie_awards.model.Activity;
 import com.ninjaone.dundie_awards.model.Employee;
 import com.ninjaone.dundie_awards.model.Organization;
@@ -16,6 +17,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -40,7 +42,7 @@ public class EmployeeControllerMediumTest {
     private OrganizationRepository organizationRepository;
 
     @Autowired
-    private EmployeeService employeeService;
+    private AwardsCache awardsCache;
 
     private Employee testEmployee;
     private Organization testOrg;
@@ -114,8 +116,7 @@ public class EmployeeControllerMediumTest {
     @Test
     @DisplayName("POST /give-dundie-awards/{orgId} - Success")
     void testGiveDundieAwards() throws Exception {
-        Long orgId = testEmployee.getId();  // Assume employee ID can represent organization ID in this context
-
+        assertEquals(0, awardsCache.getTotalAwards());
         mockMvc.perform(post("/give-dundie-awards/{orgId}", testOrg.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.event").value("GIVE_DUNDIE_ORG"))
@@ -128,5 +129,6 @@ public class EmployeeControllerMediumTest {
 
         assert savedActivity != null;
         assert savedActivity.getOrgId().equals(testOrg.getId());
+        assertEquals(1, awardsCache.getTotalAwards());
     }
 }
